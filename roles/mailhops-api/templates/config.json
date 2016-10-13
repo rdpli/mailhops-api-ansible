@@ -1,0 +1,8 @@
+{
+        "w3w": {"api_key":"{{ w3w_api_key }}"}
+        ,"forecastio": {"api_key":"{{ forecastio_api_key }}"}
+        ,"cachetio":{"url":"{{cachetio_url}}","api_key":"{{cachetio_api_key}}"}
+        ,"mongodb":{
+                "connectionString":"{{ mongo_connection_string }}"
+        }
+}

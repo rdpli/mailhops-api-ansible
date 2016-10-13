@@ -1,0 +1,6 @@
+mongodb_version: 3.2.9
+mongodb_port: 27017
+mongodb_database: "mailhops"
+# these will be used if more than one mongo is set in the inventory
+mongodb_replSetName: "rsMailHops"
+mongodb_oplogSizeMb: 1024

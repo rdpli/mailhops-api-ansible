@@ -1,0 +1,7 @@
+---
+  
+- name: restart nginx-nr-agent
+  service: name=nginx-nr-agent state=restarted enabled=yes
+
+- name: restart newrelic-sysmond
+  service: name=newrelic-sysmond state=restarted enabled=yes

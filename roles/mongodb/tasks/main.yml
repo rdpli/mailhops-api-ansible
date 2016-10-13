@@ -1,0 +1,23 @@
+---
+- name: Copy Repo
+  copy: src=mongodb-org-3.2.repo dest=/etc/yum.repos.d/mongodb-org-3.2.repo
+
+- name: Copy mongod nproc
+  copy: src=99-mongodb-nproc.conf dest=/etc/security/limits.d/99-mongodb-nproc.conf
+
+- name: Copy mongod.conf
+  template: src=mongod.conf dest=/etc/mongod.conf
+
+- name: Install mongodb
+  yum: name=mongodb-org-{{mongodb_version}} state=installed update_cache=yes
+
+- name: Reload systemctl daemon
+  command: systemctl daemon-reload
+
+- name: Turn off THP enabled
+  shell: echo never > /sys/kernel/mm/transparent_hugepage/enabled
+  notify: restart mongod
+
+- name: Turn off THP defrag
+  shell: echo never > /sys/kernel/mm/transparent_hugepage/defrag
+  notify: restart mongod

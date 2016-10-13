@@ -1,0 +1,29 @@
+[all:vars]
+newrelic_license=""
+http_port=80
+https_port=443
+with_ssl=false
+mongo_user=""
+mongo_pass=""
+root_web_dir="/var/www/mailhops-api"
+server_name="api.mailhops.com"
+cachetio_url=""
+cachetio_api_key=""
+
+# mailhops-api code will be installed from git_repo
+git_repo=https://github.com/mailhops/mailhops-api.git
+
+# list mongo first so it gets cached for the connection string
+[api]
+# IP or FQDN
+
+[api:vars]
+newrelic_appname="MailHops API"
+with_ssl=true
+
+#Add 1, 3 or 5 mongo DB servers
+[mongo]
+# IP or FQDN
+
+[mongo:vars]
+newrelic_appname="MailHops MongoDB"

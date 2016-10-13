@@ -1,0 +1,48 @@
+---
+- name: Install php-fpm7 and deps
+  yum: name={{ item }} state=installed update_cache=yes
+  with_items:
+    - php70w
+    - php70w-cli
+    - php70w-common
+    - php70w-fpm
+    - php70w-pdo
+    - php70w-mbstring
+    - php70w-mcrypt
+    - php70w-pear
+    - php70w-devel
+    - php70w-pecl-apcu
+    - php70w-opcache
+    - openssl-devel
+    - gcc
+    - cyrus-sasl-devel
+
+- name: Install PHP Mongo Driver
+  command: pecl install mongodb
+  notify: restart php-fpm
+  register: pecl_result
+  changed_when: "pecl_result.rc == 0"
+  failed_when: "not (('already installed' in pecl_result.stdout) or ('install ok:' in pecl_result.stdout))"
+
+- name: Add mongodb.ini
+  shell: echo extension=mongodb.so > /etc/php.d/mongodb.ini
+
+- name: Install DNSBL
+  command: pear install Net_DNSBL
+  notify: restart php-fpm
+  register: pecl_result
+  changed_when: "pecl_result.rc == 0"
+  failed_when: "not (('already installed' in pecl_result.stdout) or ('install ok:' in pecl_result.stdout))"
+
+- name: Copy php-ini configuration
+  ini_file: dest=/etc/php.ini section={{item.section}} option={{item.option}} value={{item.value}}
+  with_items:
+    - {section: "PHP", option: "short_open_tag", value: "On" }
+    - {section: "Date", option: "date.timezone", value: "UTC" }
+#
+- name: Copy php-ini config
+  template: src=www.conf dest=/etc/php-fpm.d/www.conf
+
+- name: set file perms
+  file: path=/var/log/php-fpm owner=apache group=apache recurse=yes state=directory
+  notify: restart php-fpm

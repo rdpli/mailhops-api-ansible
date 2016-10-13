@@ -1,0 +1,39 @@
+---
+- name: Install nginx.repo
+  copy: src=nginx.repo dest=/etc/yum.repos.d/nginx.repo
+
+- name: Install nginx and deps
+  yum: name={{ item }} state=installed state=present
+  with_items:
+    - nginx-1.10.1
+    - httpd-tools
+    - python-passlib
+
+- name: Remove conf
+  file: path=/etc/nginx/conf.d/default.conf state=absent
+
+- name: Copy mailhops-ssl.conf
+  template: src=mailhops-ssl.conf dest=/etc/nginx/conf.d/mailhops-ssl.conf
+  when: with_ssl|bool
+
+- name: Copy mailhops-non-ssl.conf
+  template: src=mailhops-non-ssl.conf dest=/etc/nginx/conf.d/mailhops-non-ssl.conf
+
+- name: Copy nginx.conf
+  template: src=nginx.conf dest=/etc/nginx/nginx.conf
+
+- name: Setup auth for nginx
+  shell: "htpasswd -bc /etc/nginx/.htpasswd {{ signup_user }} {{ signup_pass }}"
+
+- name: Setup perms for htpasswd
+  file: path=/etc/nginx/.htpasswd owner=nginx group=nginx mode=0640
+
+- name: Remove logs Cron
+  cron: name="remove nginx logs" hour=23 job="find /var/log/nginx -mindepth 1 -type f -mtime +14 | xargs rm"
+
+- name: set file perms
+  file: path={{ item }} owner=nginx group=nginx recurse=yes state=directory
+  with_items:
+    - /var/log/nginx
+    - /etc/nginx
+  notify: reload nginx

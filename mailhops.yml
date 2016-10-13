@@ -1,0 +1,32 @@
+---
+
+- hosts: all
+
+  serial: 50%
+
+  become: true
+
+  pre_tasks:
+    - include: includes/mongo_connection.yml
+      tags: [code_only]
+
+  roles:
+    - { role: common }
+    - { role: php-fpm }
+    - { role: nginx }
+    - { role: newrelic, tags: [monitoring], when: newrelic_license is defined and newrelic_license != "" }
+    - { role: mailhops-api, tags: [code_only] }
+    - { role: mongodb, when: "'mongo' in group_names" }
+
+  tasks:
+    - name: Restart Services
+      service: name={{item}} state=restarted
+      with_items:
+        - php-fpm
+        - nginx
+
+    - name: Wait for MailHops
+      wait_for: port={{ http_port }} delay=10
+
+    - name: Check it out
+      debug: msg="http://{{ inventory_hostname }}/v2/lookup/?r=127.0.0.1"

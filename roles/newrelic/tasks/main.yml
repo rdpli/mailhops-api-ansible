@@ -1,0 +1,55 @@
+---
+
+  - name: Add New Relic Repo
+    yum: name=http://yum.newrelic.com/pub/newrelic/el5/x86_64/newrelic-repo-5-3.noarch.rpm state=present
+
+  - name: Install New Relic
+    yum: name={{ item }} state=latest update_cache=yes
+    with_items:
+      - newrelic-php5
+      - newrelic-sysmond
+      - nginx-nr-agent
+
+  - name: Install New Relic PHP
+    command: newrelic-install install
+    environment:
+      - NR_INSTALL_SILENT: true
+      # - NR_INSTALL_PATH:
+      # - NR_INSTALL_PHPLIST:
+
+  - name: Update nrsysmond-config
+    ini_file: dest=/etc/newrelic/nrsysmond.cfg section= option="{{ item.option }}" value="{{ item.value }}" no_extra_spaces=yes
+    with_items:
+      - { option: "license_key", value: "{{ newrelic_license }}" }
+      - { option: "hostname", value: "{{ inventory_hostname }}" }
+      - { option: "disable_docker", value: true }
+      - { option: "disable_nfs", value: true }
+      - { option: "labels", value: "Groups:{{ group_names|join(',') }};" }
+
+  - name: Install nginx app license
+    ini_file: dest=/etc/nginx-nr-agent/nginx-nr-agent.ini section={{item.section}} option="{{ item.option }}" value="\"{{ item.value }}"\" no_extra_spaces=yes
+    with_items:
+      - { section: "global", option: "newrelic_license_key", value: "{{ newrelic_license }}" }
+      - { section: "source1", option: "name", value: "mailhops_api_v2" }
+      - { section: "source1", option: "url", value: "http://{{ server_name }}/v2/lookup/?healthcheck=true" }
+
+  - name: Install php app license
+    ini_file: dest=/etc/php.d/newrelic.ini section=newrelic option="{{ item.option }}" value="\"{{ item.value }}"\" no_extra_spaces=yes
+    with_items:
+      - { option: "newrelic.appname", value: "{{ newrelic_appname }}" }
+      - { option: "newrelic.license", value: "{{ newrelic_license }}" }
+      - { option: "newrelic.process_host.display_name", value: "{{ inventory_hostname }}" }
+
+  - name: Set file perms
+    file: path={{ item }} owner=newrelic group=newrelic recurse=yes state=directory
+    with_items:
+      - /var/log/newrelic
+      - /etc/newrelic
+
+  - name: Copy newrelic.ini
+    copy: src=/etc/php.d/newrelic.ini dest=/etc/php-fpm.d/newrelic.ini remote_src=yes
+    notify:
+     - restart nginx
+     - restart php-fpm
+     - restart nginx-nr-agent
+     - restart newrelic-sysmond

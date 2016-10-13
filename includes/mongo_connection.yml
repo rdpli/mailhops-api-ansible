@@ -1,0 +1,19 @@
+---
+- name: Get MongoDB hosts
+  set_fact:
+    mongo_connection_string: "{% for host in groups['mongo'] -%}{{ hostvars[host]['ansible_eth0']['ipv4']['address'] }}:{{ mongodb_port | default(27017) }}{%- if not loop.last %},{%- endif %}{%- endfor %}"
+  when: groups['mongo'] | length | int >= 1
+
+- name: Update MongoDB Connection String
+  set_fact:
+    mongo_connection_string: "mongodb://{{ mongo_connection_string }}/{{ mongodb_database }}/?connectTimeoutMS=2000"
+  when: groups['mongo'] | length | int >= 1
+
+- name: Update MongoDB Connection String for replicasets
+  set_fact:
+    mongo_connection_string: "{{ mongo_connection_string }}&replicaSet={{ replSetName }}"
+  when: groups['mongo'] | length | int > 1
+
+- name: Using MongoDB Connection String
+  debug: var=mongo_connection_string
+  

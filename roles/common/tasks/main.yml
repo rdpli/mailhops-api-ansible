@@ -1,0 +1,23 @@
+---
+
+- name: Install EPEL
+  yum: name=https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm state=present
+
+- name: Install Webtatic
+  yum: name=https://mirror.webtatic.com/yum/el7/webtatic-release.rpm state=present
+
+- name: Install Security updates
+  yum: name=yum-plugin-security state=latest
+
+- name: Install vim
+  yum: name=vim state=installed update_cache=yes
+
+- name: Update timezone
+  shell: timedatectl set-timezone UTC
+
+- name: Get Date & uptime
+  shell: date && uptime
+  register: date_uptime
+
+- name: Show Date & uptime
+  debug: var=date_uptime.stdout.split('\n')
