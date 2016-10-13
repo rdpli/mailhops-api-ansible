@@ -8,8 +8,7 @@
       - bind-utils
 
   - name: Update MailHops API
-    git: repo={{ git_repo }} dest={{ root_web_dir }} force=yes
-    tags: [code_update]
+    git: repo={{ git_repo }} dest={{ root_web_dir }} force=yes    
 
   - name: Copy MailHops config
     template: src=config.json dest="{{ root_web_dir }}/config.json"
