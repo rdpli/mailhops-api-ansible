@@ -6,9 +6,10 @@
       - npm
       - git
       - bind-utils
+      - wget
 
   - name: Update MailHops API
-    git: repo={{ git_repo }} dest={{ root_web_dir }} force=yes    
+    git: repo={{ git_repo }} dest={{ root_web_dir }} force=yes
 
   - name: Copy MailHops config
     template: src=config.json dest="{{ root_web_dir }}/config.json"
@@ -53,8 +54,11 @@
     cron: name="geoip update" weekday=3 job="{{ root_web_dir }}/cron_get_geoip.sh > /dev/null"
     when: cron_on
 
+  - name: Update GeoIP perms
+    file: path="{{ root_web_dir }}/cron_get_geoip.sh" mode=755
+
   - name: Update GeoIP
-    command: "{{ root_web_dir }}/cron_get_geoip.sh"
+    shell: "{{ root_web_dir }}/cron_get_geoip.sh"
 
   - name: Install Metrics Cron
     cron: name="cachet metrics" minute=*/5 job="php {{ root_web_dir }}/v2/scripts/metrics.php > /dev/null"

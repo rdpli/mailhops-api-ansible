@@ -4,6 +4,10 @@
 
 Start off with a CentOS 7 EC2 instance from the AWS Marketplace
 
+Edit the security group:
+* Allow inbound port 80
+* Allow inbound Mongo 27017 from hosts 10.0.0.0/16
+
 **available tags**
 * monitoring
 * code_only

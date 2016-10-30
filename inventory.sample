@@ -19,7 +19,6 @@ git_repo=https://github.com/mailhops/mailhops-api.git
 
 [api:vars]
 newrelic_appname="MailHops API"
-with_ssl=true
 
 #Add 1, 3 or 5 mongo DB servers
 [mongo]

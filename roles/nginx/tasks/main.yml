@@ -14,19 +14,13 @@
 
 - name: Copy mailhops-ssl.conf
   template: src=mailhops-ssl.conf dest=/etc/nginx/conf.d/mailhops-ssl.conf
-  when: with_ssl|bool
+  when: with_ssl
 
 - name: Copy mailhops-non-ssl.conf
   template: src=mailhops-non-ssl.conf dest=/etc/nginx/conf.d/mailhops-non-ssl.conf
 
 - name: Copy nginx.conf
   template: src=nginx.conf dest=/etc/nginx/nginx.conf
-
-- name: Setup auth for nginx
-  shell: "htpasswd -bc /etc/nginx/.htpasswd {{ signup_user }} {{ signup_pass }}"
-
-- name: Setup perms for htpasswd
-  file: path=/etc/nginx/.htpasswd owner=nginx group=nginx mode=0640
 
 - name: Remove logs Cron
   cron: name="remove nginx logs" hour=23 job="find /var/log/nginx -mindepth 1 -type f -mtime +14 | xargs rm"

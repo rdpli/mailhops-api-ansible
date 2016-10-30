@@ -16,4 +16,3 @@
 
 - name: Using MongoDB Connection String
   debug: var=mongo_connection_string
-  
